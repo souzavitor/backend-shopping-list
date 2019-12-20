@@ -3,7 +3,6 @@
             [com.walmartlabs.lacinia.util :refer [attach-resolvers]]
             [sandbox.resolvers :as resolvers]))
 
-
 (def scalars
   {:ID
    {:parse     str

@@ -1,19 +1,15 @@
-(ns sandbox.db
-  (:require [sandbox.logic :as logic]
+(ns sandbox.db.shopping-list
+  (:require [sandbox.adapters :as adapter]
+            [sandbox.db.item :as db.item]
             [sandbox.helpers :as helpers]
-            [sandbox.adapters :as adapter]))
+            [sandbox.logic.shopping-list :as logic]))
 
 (def all-shopping-lists (atom {}))
-(def all-items (atom {}))
-
 (defn find-shopping-list-by-id [id]
   (helpers/filter-by-id id @all-shopping-lists))
 
 (defn delete-shopping-list-by-id [id]
   (swap! all-shopping-lists logic/without-shopping-list id))
-
-(defn find-item-by-id [id]
-  (helpers/filter-by-id id @all-items))
 
 (defn insert-shopping-list!
   [customer-id label]
@@ -22,17 +18,10 @@
        (swap! all-shopping-lists logic/with-new-shopping-list)
        adapter/db->internal))
 
-(defn insert-item!
-  [label qty unit-price]
-  (->> (logic/new-item label qty unit-price)
-       adapter/internal->db
-       (swap! all-items logic/item-list-with-new-item)))
-
 (defn insert-item-into-shopping-list!
   [shopping-list-id item-id]
-  (->> (find-item-by-id item-id)
+  (->> (db.item/find-item-by-id item-id)
        (swap! all-shopping-lists
               logic/shopping-list-with-new-item
               shopping-list-id))
   (find-shopping-list-by-id shopping-list-id))
-

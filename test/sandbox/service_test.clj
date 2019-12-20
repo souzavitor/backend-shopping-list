@@ -6,14 +6,15 @@
             [matcher-combinators.test]
             [matcher-combinators.matchers :as m]
             [midje.sweet :refer :all]
-            [sandbox.db :as db]
-            [sandbox.logic :as logic]
+            [sandbox.db.shopping-list :as db.shopping]
+            [sandbox.logic.shopping-list :as logic.shopping]
+            [sandbox.logic.item :as logic.item]
             [sandbox.service :as service])
   (:import [java.util UUID]))
 
 (def customer-id (UUID/randomUUID))
 (def label "My Shopping List")
-(def shopping-list (logic/new-shopping-list customer-id label))
+(def shopping-list (logic.shopping/new-shopping-list customer-id label))
 (def expected-shopping-list
   (-> shopping-list
       (update :id str)
@@ -25,7 +26,7 @@
 (def shopping-list-id (:id shopping-list))
 (def shopping-list-id-str (str shopping-list-id))
 
-(def item (logic/new-item "A" 10 10.0))
+(def item (logic.item/new-item "A" 10 10.0))
 (def item-id (:id item))
 (def item-id-str (str item-id))
 
@@ -60,19 +61,19 @@
 (deftest testing-rest-api-endpoints
   (testing "shopping list api endpoints"
     (testing "get /api/shopping-lists"
-      (reset! db/all-shopping-lists {shopping-list-id-str shopping-list})
+      (reset! db.shopping/all-shopping-lists {shopping-list-id-str shopping-list})
       (is (match? (m/embeds {:body   {:data [expected-shopping-list]}
                              :status 200})
                   (request "/api/shopping-lists" :get))))
 
     (testing "get /api/shopping-list/:id"
-      (reset! db/all-shopping-lists {shopping-list-id-str shopping-list})
+      (reset! db.shopping/all-shopping-lists {shopping-list-id-str shopping-list})
       (is (match? (m/embeds {:body   {:data expected-shopping-list}
                              :status 200})
                   (request (str "/api/shopping-list/" shopping-list-id-str) :get))))
 
     (testing "post /api/shopping-list/:id"
-      (reset! db/all-shopping-lists {})
+      (reset! db.shopping/all-shopping-lists {})
       (is (match? (m/embeds {:body   {:data new-expected-shopping-list}
                              :status 200})
                   (request "/api/shopping-list/"
@@ -83,6 +84,6 @@
                             :headers {"Content-Type" "application/json"}}))))
 
     (testing "delete /api/shopping-list/:id"
-      (reset! db/all-shopping-lists {shopping-list-id-str shopping-list})
+      (reset! db.shopping/all-shopping-lists {shopping-list-id-str shopping-list})
       (is (match? (m/embeds {:status 204})
                   (request (str "/api/shopping-list/" shopping-list-id-str) :delete))))))

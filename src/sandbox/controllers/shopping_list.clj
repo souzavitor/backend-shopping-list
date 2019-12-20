@@ -1,6 +1,5 @@
-(ns sandbox.controller
-  (:require [sandbox.db :as db]
-            [sandbox.adapters :as adapter]))
+(ns sandbox.controllers.shopping-list
+  (:require [sandbox.db.shopping-list :as db]))
 
 (defn get-all-shopping-lists []
   (vals @db/all-shopping-lists))

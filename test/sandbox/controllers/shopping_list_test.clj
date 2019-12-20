@@ -1,12 +1,10 @@
-(ns sandbox.controller_test
+(ns sandbox.controllers.shopping-list-test
   (:require [midje.sweet :refer :all]
-            [sandbox.controller :as controller]
-            [sandbox.db :as db]
-            [sandbox.logic :as logic]
-            [sandbox.db :as db]
+            [sandbox.controllers.shopping-list :as controller]
+            [sandbox.db.shopping-list :as db]
+            [sandbox.logic.shopping-list :as logic]
             [matcher-combinators.matchers :as m]
-            [matcher-combinators.midje :refer [match]]
-            [sandbox.adapters :as adapter])
+            [matcher-combinators.midje :refer [match]])
   (:import [java.util UUID]))
 
 (def customer-id (UUID/randomUUID))
@@ -29,9 +27,3 @@
                          :customer-id customer-id
                          :label       label
                          :items       []}))))
-
-;(facts "about shopping list items"
-;  (fact "add new item to the shopping list"
-;    (reset! db/all-shopping-lists [shopping-list])
-;    (let [item (logic/new-item "A" 5 10.98)]
-;      (controller/add-new-item-to-shopping-list shopping-list-id item))))
