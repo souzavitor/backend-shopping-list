@@ -4,9 +4,8 @@
             [sandbox.controllers.shopping-list :as controller.shopping]
             [sandbox.controllers.item :as controller.item]))
 
-(defn get-all-shopping-lists [_context args _parent]
-  (if-let [customer-id (:customerId args)
-           shopping-lists (controller.shopping/get-all-shopping-lists customer-id)]
+(defn get-all-shopping-lists [_context {customer-id :customerId} _parent]
+  (if-let [shopping-lists (controller.shopping/get-all-shopping-lists customer-id)]
     (map adapter.shopping/internal->graphql shopping-lists)
     []))
 
