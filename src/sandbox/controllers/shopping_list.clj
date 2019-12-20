@@ -1,8 +1,12 @@
 (ns sandbox.controllers.shopping-list
   (:require [sandbox.db.shopping-list :as db]))
 
-(defn get-all-shopping-lists []
-  (vals @db/all-shopping-lists))
+(defn get-all-shopping-lists
+  ([customer-id]
+   (->> @db/all-shopping-lists
+        vals
+        (filter #(= customer-id (:customer-id %)))))
+  ([] (vals @db/all-shopping-lists)))
 
 (defn get-shopping-list [id]
   (db/find-shopping-list-by-id id))

@@ -1,13 +1,16 @@
 (ns sandbox.controllers.shopping-list-test
-  (:require [midje.sweet :refer :all]
+  (:require [clojure.test :refer :all]
             [sandbox.controllers.shopping-list :as controller]
             [sandbox.db.shopping-list :as db]
             [sandbox.logic.shopping-list :as logic]
             [matcher-combinators.matchers :as m]
-            [matcher-combinators.midje :refer [match]])
+            [matcher-combinators.midje :refer [match]]
+            [matcher-combinators.test]
+            [midje.sweet :refer :all])
   (:import [java.util UUID]))
 
 (def customer-id (UUID/randomUUID))
+(def customer-id-fake (UUID/randomUUID))
 (def label "My Shopping List")
 
 ;; create new shopping list to use in our test cases
@@ -27,3 +30,16 @@
                          :customer-id customer-id
                          :label       label
                          :items       []}))))
+
+(deftest testing-controller-functions
+  (testing "get all shopping lists"
+    (testing "returning all"
+      (reset! db/all-shopping-lists {shopping-list-id-str shopping-list})
+      (is (match? [shopping-list]
+                  (controller/get-all-shopping-lists))))
+    (testing "by customer-id"
+      (reset! db/all-shopping-lists {shopping-list-id-str shopping-list})
+      (is (match? [shopping-list]
+                  (controller/get-all-shopping-lists customer-id)))
+      (is (match? []
+                  (controller/get-all-shopping-lists customer-id-fake))))))
