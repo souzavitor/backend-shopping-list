@@ -9,8 +9,7 @@
   [{{shopping-list :shopping-list} :json-params}]
   (let [customer-id (:customer-id shopping-list)
         label       (:label shopping-list)]
-    (-> {:data (controller.shopping/add-new-shopping-list customer-id label)}
-        ring-resp/response)))
+    (ring-resp/response {:data (controller.shopping/add-new-shopping-list customer-id label)})))
 
 (defn delete-shopping-list
   [{:keys [shopping-list-uuid]}]

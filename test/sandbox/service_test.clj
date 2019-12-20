@@ -14,8 +14,8 @@
   (:import [java.util UUID]))
 
 (def customer-id (UUID/randomUUID))
-(def label "My Shopping List")
-(def shopping-list (logic.shopping/new-shopping-list customer-id label))
+(def shopping-list-label "My Shopping List")
+(def shopping-list (logic.shopping/new-shopping-list customer-id shopping-list-label))
 (def expected-shopping-list
   (-> shopping-list
       (update :id str)
@@ -27,7 +27,8 @@
 (def shopping-list-id (:id shopping-list))
 (def shopping-list-id-str (str shopping-list-id))
 
-(def item (logic.item/new-item "A" 10 10.0))
+(def item-label "A")
+(def item (logic.item/new-item item-label 10 10.0))
 (def expected-item
   (update item :id str))
 (def new-expected-item
@@ -79,7 +80,7 @@
                              :status 200})
                   (request (str "/api/shopping-list/" shopping-list-id-str) :get))))
 
-    (testing "post /api/shopping-list/:id"
+    (testing "post /api/shopping-list/"
       (reset! db.shopping/all-shopping-lists {})
       (is (match? (m/embeds {:body   {:data new-expected-shopping-list}
                              :status 200})
@@ -87,7 +88,7 @@
                            :post
                            {:body    (json/encode {:shopping-list
                                                    {:customer-id (:customer-id shopping-list)
-                                                    :label       label}})
+                                                    :label       shopping-list-label}})
                             :headers {"Content-Type" "application/json"}}))))
 
     (testing "delete /api/shopping-list/:id"
@@ -98,6 +99,19 @@
   (testing "items endpoints"
     (testing "get /api/items"
       (reset! db.item/all-items {item-id-str item})
-      (is (match? (m/embeds {:body {:data [expected-item]}
+      (is (match? (m/embeds {:body   {:data [expected-item]}
                              :status 200})
-                  (request "/api/items" :get))))))
+                  (request "/api/items" :get))))
+
+    (testing "post /api/item"
+      (reset! db.item/all-items {})
+      (is (match? (m/embeds {:body   {:data new-expected-item}
+                             :status 200})
+                  (request
+                   "/api/item/"
+                   :post
+                   {:body    (json/encode {:item
+                                           {:label      item-label
+                                            :qty        10
+                                            :unit-price 10.0}})
+                    :headers {"Content-Type" "application/json"}}))))))

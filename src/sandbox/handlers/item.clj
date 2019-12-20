@@ -10,8 +10,7 @@
   (let [label      (:label item)
         qty        (:qty item)
         unit-price (:unit-price item)]
-    (-> {:data (controller.item/add-new-item label qty unit-price)}
-        ring-resp/response)))
+    (ring-resp/response {:data (controller.item/add-new-item label qty unit-price)})))
 
 (defn get-item
   [{:keys [item-uuid]}]
