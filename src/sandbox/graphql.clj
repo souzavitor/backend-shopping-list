@@ -7,17 +7,20 @@
    {:parse     str
     :serialize str}})
 
+(def objects
+  {:ShoppingList
+   {:fields {:id         {:type '(non-null ID)}
+             :customerId {:type '(non-null ID)}
+             :label      {:type 'String}}}})
+
+(defn get-all-shopping-lists [_context _args _parent]
+  [])
+
 (def skeleton
   {:scalars scalars
-   :objects {:ShoppingList
-             {:fields {:id          {:type        '(non-null ID)
-                                     :description "Shopping List Uuid"}
-                       :customerId {:type        '(non-null ID)
-                                     :description "Customer Uuid who owns this shopping list"}
-                       :label       {:type        'String
-                                     :description "A simple label to make it easier to find shopping list"}}}}
-   :queries {:hello
-             {:type    'String
-              :resolve (constantly "world")}}})
+   :objects objects
+   :queries {:allShoppingLists
+             {:type    '(non-null (list :ShoppingList))
+              :resolve get-all-shopping-lists}}})
 
 (def graphql-schema (schema/compile skeleton))
