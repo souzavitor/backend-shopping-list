@@ -28,7 +28,6 @@
 
 (def item (logic.item/new-item "A" 10 10.0))
 (def item-id (:id item))
-(def item-id-str (str item-id))
 
 ;; Initialize our service so we can test the endpoints
 (def service
