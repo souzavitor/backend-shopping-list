@@ -1,39 +1,12 @@
 (ns sandbox.service
-  (:require [sandbox.interceptors :as interceptors]
-            [sandbox.controllers.shopping-list :as controller.shopping]
+  (:require [sandbox.handlers.shopping-list :as handler.shopping]
+            [sandbox.interceptors :as interceptors]
             [sandbox.graphql :as graphql]
             [com.walmartlabs.lacinia.pedestal :as lacinia]
             [io.pedestal.http :as http]
             [io.pedestal.http.body-params :as body-params]
             [ring.util.response :as ring-resp]
             [io.pedestal.http.route :as route]))
-
-(defn hello-world [_]
-  (ring-resp/response (str "Hello world!")))
-
-(defn get-all-shopping-lists [_]
-  (ring-resp/response {:data (controller.shopping/get-all-shopping-lists)}))
-
-(defn create-new-shopping-list
-  [{{shopping-list :shopping-list} :json-params}]
-  (let [customer-id (:customer-id shopping-list)
-        label       (:label shopping-list)]
-    (-> {:data (controller.shopping/add-new-shopping-list customer-id label)}
-        ring-resp/response)))
-
-(defn delete-shopping-list
-  [{:keys [shopping-list-uuid]}]
-  (controller.shopping/delete-shopping-list shopping-list-uuid)
-  (ring-resp/status (ring-resp/response {}) 204))
-
-(defn get-shopping-list
-  [{:keys [shopping-list-uuid]}]
-  (ring-resp/response {:data (controller.shopping/get-shopping-list shopping-list-uuid)}))
-
-(defn add-new-item-into-shopping-list
-  [{:keys [shopping-list-uuid json-params]}]
-  (->> (controller.shopping/update-shopping-list-with-item shopping-list-uuid (:item-id json-params))
-       ring-resp/response))
 
 (def version (constantly (ring-resp/response {:version "1.0"})))
 
@@ -49,22 +22,22 @@
                            :path       "/graphql/query"}))
 
 (def rest-routes
-  #{["/api/" :get (conj [(body-params/body-params)] `hello-world)]
-    ["/api/version" :get (conj common-interceptors `version)]
-    ["/api/shopping-lists" :get (conj common-interceptors `get-all-shopping-lists)]
-    ["/api/shopping-list/" :post (conj common-interceptors `create-new-shopping-list)]
+  #{["/api/version" :get (conj common-interceptors `version)]
+
+    ["/api/shopping-lists" :get (conj common-interceptors `handler.shopping/get-all-shopping-lists)]
+    ["/api/shopping-list/" :post (conj common-interceptors `handler.shopping/create-new-shopping-list)]
     ["/api/shopping-list/:shopping-list-id" :delete (conj common-interceptors
                                                           (interceptors/path-id->uuid :shopping-list-id
                                                                                       :shopping-list-uuid)
-                                                          `delete-shopping-list)]
+                                                          `handler.shopping/delete-shopping-list)]
     ["/api/shopping-list/:shopping-list-id" :put (conj common-interceptors
                                                        (interceptors/path-id->uuid :shopping-list-id
                                                                                    :shopping-list-uuid)
-                                                       `add-new-item-into-shopping-list)]
+                                                       `handler.shopping/add-new-item-into-shopping-list)]
     ["/api/shopping-list/:shopping-list-id" :get (conj common-interceptors
                                                        (interceptors/path-id->uuid :shopping-list-id
                                                                                    :shopping-list-uuid)
-                                                       `get-shopping-list)]})
+                                                       `handler.shopping/get-shopping-list)]})
 
 (def routes (route/expand-routes (into rest-routes graphql-routes)))
 
