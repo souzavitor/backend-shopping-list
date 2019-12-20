@@ -10,6 +10,9 @@
 (defn with-new-shopping-list [all-shopping-lists shopping-list]
   (conj all-shopping-lists shopping-list))
 
+(defn without-shopping-list [all-shopping-lists id]
+  (dissoc all-shopping-lists (str id)))
+
 (defn new-item [label qty unit-price]
   {:id         (UUID/randomUUID)
    :label      label

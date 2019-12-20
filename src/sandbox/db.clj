@@ -9,6 +9,9 @@
 (defn find-shopping-list-by-id [id]
   (helpers/filter-by-id id @all-shopping-lists))
 
+(defn delete-shopping-list-by-id [id]
+  (swap! all-shopping-lists logic/without-shopping-list id))
+
 (defn find-item-by-id [id]
   (helpers/filter-by-id id @all-items))
 
@@ -16,7 +19,8 @@
   [customer-id label]
   (->> (logic/new-shopping-list customer-id label)
        adapter/internal->db
-       (swap! all-shopping-lists logic/with-new-shopping-list)))
+       (swap! all-shopping-lists logic/with-new-shopping-list)
+       adapter/db->internal))
 
 (defn insert-item!
   [label qty unit-price]

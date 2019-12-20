@@ -29,7 +29,7 @@
 
   (fact "should add a new shopping list"
     (reset! db/all-shopping-lists {})
-    (adapter/db->internal (db/insert-shopping-list! customer-id label))
+    (db/insert-shopping-list! customer-id label)
     => (match (m/embeds {:id          uuid?
                          :customer-id customer-id
                          :label       label

@@ -1,19 +1,33 @@
 (ns sandbox.service-test
-  (:require [midje.sweet :refer :all]
-            [sandbox.service :as service]
+  (:require [clojure.test :refer :all]
+            [cheshire.core :as json]
             [io.pedestal.http :as bootstrap]
             [io.pedestal.test :refer [response-for]]
-            [cheshire.core :as json]
+            [matcher-combinators.test]
+            [matcher-combinators.matchers :as m]
+            [midje.sweet :refer :all]
+            [sandbox.db :as db]
             [sandbox.logic :as logic]
-            [sandbox.db :as db])
+            [sandbox.service :as service])
   (:import [java.util UUID]))
 
 (def customer-id (UUID/randomUUID))
-(def shopping-list (logic/new-shopping-list customer-id))
+(def label "My Shopping List")
+(def shopping-list (logic/new-shopping-list customer-id label))
+(def expected-shopping-list
+  (-> shopping-list
+      (update :id str)
+      (update :customer-id str)))
+(def new-expected-shopping-list
+  (-> expected-shopping-list
+      (assoc :id string?)))
+
 (def shopping-list-id (:id shopping-list))
+(def shopping-list-id-str (str shopping-list-id))
 
 (def item (logic/new-item "A" 10 10.0))
 (def item-id (:id item))
+(def item-id-str (str item-id))
 
 ;; Initialize our service so we can test the endpoints
 (def service
@@ -36,42 +50,39 @@
       :status  status
       :body    (json-parse body)})))
 
+; Clojure test
+(deftest testing-common-rest-api-endpoints
+  (testing "/api/version"
+    (is (match? (m/embeds {:body   {:version "1.0"}
+                           :status 200})
+                (request "/api/version" :get)))))
 
-;; Finally our tests
-(facts "about our HTTP service"
-  (fact "API should return a simple hello world"
-    (request "/" :get) => (just {:headers map? :status 200 :body "Hello world!"}))
-  (fact "API should return shopping list"
-    (reset! db/all-shopping-lists [shopping-list])
-    (request "/shopping-lists" :get) => (just {:headers map?
-                                               :status  200
-                                               :body    map?}))
+(deftest testing-rest-api-endpoints
+  (testing "shopping list api endpoints"
+    (testing "get /api/shopping-lists"
+      (reset! db/all-shopping-lists {shopping-list-id-str shopping-list})
+      (is (match? (m/embeds {:body   {:data [expected-shopping-list]}
+                             :status 200})
+                  (request "/api/shopping-lists" :get))))
 
-  (fact "API should be able to return one shopping list according to ID"
-    (reset! db/all-shopping-lists [shopping-list])
-    (request (str "/shopping-list/" shopping-list-id) :get) => (just {:headers (contains
-                                                                                {"Content-Type"
-                                                                                 "application/json;charset=UTF-8"})
-                                                                      :body    map?
-                                                                      :status  200}))
-  (fact "API should be able to receive a new shopping list"
-    (reset! db/all-shopping-lists [])
-    (request "/shopping-list/"
-             :post
-             {:body    (json/encode {:customer-id (:customer-id shopping-list)})
-              :headers {"Content-Type" "application/json"}}) => (just {:headers (contains
-                                                                                 {"Content-Type"
-                                                                                  "application/json;charset=UTF-8"})
-                                                                       :body    map?
-                                                                       :status  200}))
-  (fact "API should be able to include new item to the shopping list"
-    (reset! db/all-shopping-lists [shopping-list])
-    (reset! db/all-items [item])
-    (request (str "/shopping-list/" shopping-list-id)
-             :put
-             {:body    (json/encode {:item-id item-id})
-              :headers {"Content-Type" "application/json"}}) => (just {:headers (contains
-                                                                              {"Content-Type"
-                                                                               "application/json;charset=UTF-8"})
-                                                                    :body    map?
-                                                                    :status  200})))
+    (testing "get /api/shopping-list/:id"
+      (reset! db/all-shopping-lists {shopping-list-id-str shopping-list})
+      (is (match? (m/embeds {:body   {:data expected-shopping-list}
+                             :status 200})
+                  (request (str "/api/shopping-list/" shopping-list-id-str) :get))))
+
+    (testing "post /api/shopping-list/:id"
+      (reset! db/all-shopping-lists {})
+      (is (match? (m/embeds {:body   {:data new-expected-shopping-list}
+                             :status 200})
+                  (request "/api/shopping-list/"
+                           :post
+                           {:body    (json/encode {:shopping-list
+                                                   {:customer-id (:customer-id shopping-list)
+                                                    :label       label}})
+                            :headers {"Content-Type" "application/json"}}))))
+
+    (testing "delete /api/shopping-list/:id"
+      (reset! db/all-shopping-lists {shopping-list-id-str shopping-list})
+      (is (match? (m/embeds {:status 204})
+                  (request (str "/api/shopping-list/" shopping-list-id-str) :delete))))))

@@ -24,7 +24,7 @@
 
   (fact "should add a new shopping list"
     (reset! db/all-shopping-lists {})
-    (adapter/db->internal (controller/add-new-shopping-list customer-id label))
+    (controller/add-new-shopping-list customer-id label)
     => (match (m/equals {:id          uuid?
                          :customer-id customer-id
                          :label       label

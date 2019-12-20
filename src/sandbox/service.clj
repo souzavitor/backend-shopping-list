@@ -16,15 +16,20 @@
   (ring-resp/response {:data (controller/get-all-shopping-lists)}))
 
 (defn create-new-shopping-list
-  [{:keys [json-params]}]
-  (let [customer-id (:customer-id json-params)
-        label       (:label json-params)]
-    (-> (controller/add-new-shopping-list customer-id label)
+  [{{shopping-list :shopping-list} :json-params}]
+  (let [customer-id (:customer-id shopping-list)
+        label       (:label shopping-list)]
+    (-> {:data (controller/add-new-shopping-list customer-id label)}
         ring-resp/response)))
+
+(defn delete-shopping-list
+  [{:keys [shopping-list-uuid]}]
+  (controller/delete-shopping-list shopping-list-uuid)
+  (ring-resp/status (ring-resp/response {}) 204))
 
 (defn get-shopping-list
   [{:keys [shopping-list-uuid]}]
-  (ring-resp/response {:shopping-list (controller/get-shopping-list shopping-list-uuid)}))
+  (ring-resp/response {:data (controller/get-shopping-list shopping-list-uuid)}))
 
 (defn add-new-item-into-shopping-list
   [{:keys [shopping-list-uuid json-params]}]
@@ -49,6 +54,10 @@
     ["/api/version" :get (conj common-interceptors `version)]
     ["/api/shopping-lists" :get (conj common-interceptors `get-all-shopping-lists)]
     ["/api/shopping-list/" :post (conj common-interceptors `create-new-shopping-list)]
+    ["/api/shopping-list/:shopping-list-id" :delete (conj common-interceptors
+                                                          (interceptors/path-id->uuid :shopping-list-id
+                                                                                      :shopping-list-uuid)
+                                                          `delete-shopping-list)]
     ["/api/shopping-list/:shopping-list-id" :put (conj common-interceptors
                                                        (interceptors/path-id->uuid :shopping-list-id
                                                                                    :shopping-list-uuid)
