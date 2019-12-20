@@ -9,7 +9,8 @@
             [sandbox.db.shopping-list :as db.shopping]
             [sandbox.logic.shopping-list :as logic.shopping]
             [sandbox.logic.item :as logic.item]
-            [sandbox.service :as service])
+            [sandbox.service :as service]
+            [sandbox.db.item :as db.item])
   (:import [java.util UUID]))
 
 (def customer-id (UUID/randomUUID))
@@ -27,7 +28,14 @@
 (def shopping-list-id-str (str shopping-list-id))
 
 (def item (logic.item/new-item "A" 10 10.0))
+(def expected-item
+  (update item :id str))
+(def new-expected-item
+  (-> expected-item
+      (assoc :id string?)))
+
 (def item-id (:id item))
+(def item-id-str (str item-id))
 
 ;; Initialize our service so we can test the endpoints
 (def service
@@ -85,4 +93,11 @@
     (testing "delete /api/shopping-list/:id"
       (reset! db.shopping/all-shopping-lists {shopping-list-id-str shopping-list})
       (is (match? (m/embeds {:status 204})
-                  (request (str "/api/shopping-list/" shopping-list-id-str) :delete))))))
+                  (request (str "/api/shopping-list/" shopping-list-id-str) :delete)))))
+
+  (testing "items endpoints"
+    (testing "get /api/items"
+      (reset! db.item/all-items {item-id-str item})
+      (is (match? (m/embeds {:body {:data [expected-item]}
+                             :status 200})
+                  (request "/api/items" :get))))))

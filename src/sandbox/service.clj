@@ -1,5 +1,6 @@
 (ns sandbox.service
   (:require [sandbox.handlers.shopping-list :as handler.shopping]
+            [sandbox.handlers.item :as handler.item]
             [sandbox.interceptors :as interceptors]
             [sandbox.graphql :as graphql]
             [com.walmartlabs.lacinia.pedestal :as lacinia]
@@ -37,7 +38,10 @@
     ["/api/shopping-list/:shopping-list-id" :get (conj common-interceptors
                                                        (interceptors/path-id->uuid :shopping-list-id
                                                                                    :shopping-list-uuid)
-                                                       `handler.shopping/get-shopping-list)]})
+                                                       `handler.shopping/get-shopping-list)]
+
+    ["/api/items" :get (conj common-interceptors `handler.item/get-all-items)]
+    ["/api/item/" :post (conj common-interceptors `handler.item/create-new-item)]})
 
 (def routes (route/expand-routes (into rest-routes graphql-routes)))
 
