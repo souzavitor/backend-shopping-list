@@ -12,7 +12,8 @@
   {:ShoppingList
    {:fields {:id         {:type '(non-null ID)}
              :customerId {:type '(non-null ID)}
-             :label      {:type '(non-null String)}}}
+             :label      {:type '(non-null String)}
+             :items      {:type '(non-null (list :Item))}}}
    :Item
    {:fields {:id        {:type '(non-null ID)}
              :label     {:type '(non-null String)}

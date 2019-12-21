@@ -1,6 +1,5 @@
-(ns sandbox.adapters.shopping-list)
+(ns sandbox.adapters.shopping-list
+  (:require [sandbox.adapters :as adapters]))
 
-(defn internal->graphql [internal]
-  (-> internal
-      (assoc :customerId (:customer-id internal))
-      (dissoc :items :customer-id)))
+(defn internal->graphql [internal-map]
+  (adapters/internal->graphql internal-map))

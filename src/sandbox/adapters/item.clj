@@ -1,6 +1,5 @@
-(ns sandbox.adapters.item)
+(ns sandbox.adapters.item
+  (:require [sandbox.adapters :as adapters]))
 
-(defn internal->graphql [internal]
-  (-> internal
-      (assoc :unitPrice (:unit-price internal))
-      (dissoc :unit-price)))
+(defn internal->graphql [internal-map]
+  (adapters/internal->graphql internal-map))
